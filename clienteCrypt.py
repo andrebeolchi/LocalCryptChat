@@ -1,22 +1,21 @@
-from socket import *
+from socket import socket, AF_INET, SOCK_STREAM
 from Crypto.Cipher import AES
-chave = "OIESSAEHASENHAOK"
-aes = AES.new(chave, AES.MODE_ECB)
+key = "OIESSAEHASENHAOK"
+nkey = len(key)
+aes = AES.new(key, AES.MODE_ECB)
 
-servidor = "127.0.0.1"
-porta = 60005
+server = input('Server ID: ')
+port = int(input('Server port: '))
 
 while True:
-    conexao = socket(AF_INET, SOCK_STREAM)
-    conexao.connect((servidor, porta))
+    c = socket(AF_INET, SOCK_STREAM)
+    c.connect((server, port))
     while True:
-        texto_claro = bytes(input("Digite uma mensagem: "), 'utf-8')
-        while len(texto_claro) % 16 > 0:     
-            texto_claro += b"."
-            print(texto_claro)
-        texto_cifrado = aes.encrypt(texto_claro)
-        conexao.send(texto_cifrado)
-        resposta = conexao.recv(1024)
-        print("Texto Encriptado: ", str(resposta))
-        print("Texto claro: ", str(aes.decrypt(resposta)))
-    conexao.close()
+        m = bytes(input("send a message: "), 'utf-8')
+        while len(m) % nkey > 0:     
+            m += b"&"
+        m_crypt = aes.encrypt(m)
+        c.send(m_crypt)
+        r = c.recv(1024)
+        print("received: ", aes.decrypt(r).decode().replace('&',''))
+    c.close()
